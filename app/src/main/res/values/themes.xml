@@ -11,6 +11,10 @@
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+
         <!-- Customize your theme here. -->
+
+        <!-- Hides phone status bar on top of screen-->
+        <item name="android:windowFullscreen">true</item>
     </style>
 </resources>
