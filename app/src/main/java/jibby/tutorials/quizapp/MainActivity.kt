@@ -21,16 +21,12 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Please enter your name to start the quiz!", Toast.LENGTH_LONG).show()
             } else {
                 val intent = Intent(this, QuizQuestionsActivity::class.java)
-
+                intent.putExtra(Constants.USER_NAME, etUserName.text.toString())
                 startActivity(intent)
 
                 // Finishes the current activity, closing it
                 finish()
             }
-        }
-
-        fun onStart(view: View) {
-
         }
     }
 }

@@ -1,5 +1,6 @@
 package jibby.tutorials.quizapp
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
@@ -9,6 +10,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 
 class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
@@ -16,6 +18,8 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private var mCurrentPosition: Int = 1
     private var mQuestionsList: ArrayList<Question>? = null
     private var mSelectedOptionPosition : Int = 0
+    private var mCorrectAnswers: Int = 0
+    private var mUserName: String? = null
 
     private var progressBar: ProgressBar? = null
     private var tvProgressText: TextView? = null
@@ -28,6 +32,7 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private var tvChoice4: TextView? = null
 
     private var btnSubmit: Button? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,15 +52,19 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
         tvChoice2?.setOnClickListener(this)
         tvChoice3?.setOnClickListener(this)
         tvChoice4?.setOnClickListener(this)
-        btnSubmit?.setOnClickListener(this)
 
         btnSubmit = findViewById(R.id.btnSubmit)
+        btnSubmit?.setOnClickListener(this)
+
         mQuestionsList = Constants.getQuestions()
+        mUserName = intent.getStringExtra(Constants.USER_NAME)
 
         setQuestion()
     }
 
     private fun setQuestion() {
+        // Reset all options background when new question is set
+        defaultOptionsView()
         val question: Question = mQuestionsList!![mCurrentPosition - 1]
         ivCurrentImage?.setImageResource(question.image)
         progressBar?.progress = mCurrentPosition
@@ -128,10 +137,60 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
             }
 
             R.id.btnSubmit -> {
-                //TODO: btn Submit functionality
+                if(mSelectedOptionPosition == 0) {
+                    mCurrentPosition++
+
+                    when{
+                        mCurrentPosition <= mQuestionsList!!.size -> {
+                            setQuestion()
+                        }
+
+                        else -> {
+                            Toast.makeText(this, "Congrats, you've made it to the end!", Toast.LENGTH_LONG).show()
+                            val intent = Intent(this, ResultsActivity::class.java)
+                            intent.putExtra(Constants.USER_NAME, mUserName)
+                            intent.putExtra(Constants.CORRECT_ANSWERS, mCorrectAnswers)
+                            intent.putExtra(Constants.TOTAL_QUESTIONS, mQuestionsList?.size)
+                            startActivity(intent)
+                            finish()
+                        }
+                    }
+                } else {
+                    val question = mQuestionsList?.get(mCurrentPosition - 1)
+                    if(question!!.correctAnswer != mSelectedOptionPosition) {
+                        answerView(question!!.correctAnswer, R.drawable.choice_border_correct)
+                        answerView(mSelectedOptionPosition, R.drawable.choice_border_incorrect)
+                    } else {
+                        mCorrectAnswers++
+                        answerView(mSelectedOptionPosition, R.drawable.choice_border_correct)
+                    }
+
+                    if(mCurrentPosition == mQuestionsList!!.size) {
+                        btnSubmit?.text = "Finish"
+                    } else {
+                        btnSubmit?.text = "Next Question"
+                    }
+                    mSelectedOptionPosition = 0
+
+                }
             }
         }
     }
 
-
+    private fun answerView(answer: Int, drawableView: Int) {
+        when(answer) {
+            1 -> {
+                tvChoice1?.background = ContextCompat.getDrawable(this, drawableView)
+            }
+            2 -> {
+                tvChoice2?.background = ContextCompat.getDrawable(this, drawableView)
+            }
+            3 -> {
+                tvChoice3?.background = ContextCompat.getDrawable(this, drawableView)
+            }
+            4 -> {
+                tvChoice4?.background = ContextCompat.getDrawable(this, drawableView)
+            }
+        }
+    }
 }
